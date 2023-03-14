@@ -1,22 +1,28 @@
+configfile = "config/config.yaml"
+
+def input_all(wc):
+    for runid in config["runs"]:
+        yield "results/nanoplot/{runid}"
+
 rule all:
-    input:
-        "results/nanoplot/20220517",
-        "results/nanoplot/20220523",
+    input: input_all
+
+def input_nanoplot(wc):
+        f"config['prefix']{wc.runid}/no_sample/config['runs'][wc.runid]['dirname']/config['runs'][wc.runid]['summary']"
 
 rule nanoplot:
-	input:
-        summary=""
+	input: input_nanoplot
     output:
-        d=directory("results/nanoplot"),
+        d=directory("results/nanoplot/{runid}"),
 	conda: "envs/nanoplot.yaml"
     log:
-        o="log/nanoplot/nanoplot.log",
-        e="log/nanoplot/nanoplot.err"
-    benchmark: "log/nanoplot/nanoplot.bmk"
+        o="log/nanoplot/{runid}.log",
+        e="log/nanoplot/{runid}.err"
+    benchmark: "log/nanoplot/{runid}.bmk"
     threads: 8
     resources:
         mem_mb=64000,
         runtime=120
 	shell: """
-        NanoPlot --summary {input.summary} -o nanoplot_output > {log.o} 2> {log.e}
+        NanoPlot --summary {input.summary} -o {output.d} > {log.o} 2> {log.e}
     """
