@@ -1,0 +1,9 @@
+prefix: /storage/scratch01/groups/bu/myeloma_altum/altum/Sequencing_runs/1901449_nanopore_
+
+runs:
+  20220517:
+    dirname: 20220517_1140_MN38629_FAR64540_5c4e90f
+    summary: sequencing_summary_FAR64540_18bf4d69.txt
+  20220523:  
+    dirname: 20220523_1017_MN38629_FAR64621_15a8c2b1
+    summary: sequencing_summary_FAR64621_8723cccc.txt
