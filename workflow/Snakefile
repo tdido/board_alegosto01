@@ -2,7 +2,7 @@ configfile: "config/config.yaml.example"
 
 def input_all(wc):
     for runid in config["runs"]:
-        yield "results/nanoplot/{runid}"
+        yield f"results/nanoplot/{runid}"
 
 def get_resource(rule,resource):
     try:
@@ -10,26 +10,36 @@ def get_resource(rule,resource):
     except KeyError:
         return config["resources"]["default"][resource]
 
+def input_nanoplot(wc):
+    #print(f"{config['prefix']}{wc.runid}/no_sample/{"config['runs']["+{wc.runid}+"]['dirname']"})
+    #print(f"config['prefix']{wc.runid}/no_sample/config['runs'][wc.runid]['dirname']/config['runs'][wc.runid]['summary']")
+    yield f"{config['prefix']}{wc.runid}/no_sample/{config['runs'][wc.runid]['dirname']}/{config['runs'][wc.runid]['summary']}"
+
 
 rule all:
     input: input_all
 
-def input_nanoplot(wc):
-        f"config['prefix']{wc.runid}/no_sample/config['runs'][wc.runid]['dirname']/config['runs'][wc.runid]['summary']"
-
 rule nanoplot:
-	input: input_nanoplot
-	output:
-        	d=directory("results/nanoplot/{runid}"),
-	conda: "envs/nanoplot.yaml"
-    	log:
-        	o="log/nanoplot/{runid}.log",
-        	e="log/nanoplot/{runid}.err",
-        benchmark: "log/nanoplot/{runid}.bmk"
-	threads: get_resource("nanoplot","threads")
-        resources:
-        	mem_mb= get_resource("nanoplot","mem_mb"),
-        	runtime=get_resource("nanoplot","runtime"),
-	shell: """
-        NanoPlot --summary {input.summary} -o {output.d} > {log.o} 2> {log.e}
+    input: input_nanoplot
+    output:
+        d=directory("results/nanoplot/{runid}"),
+    conda: "envs/nanoplot.yaml"
+    log:
+        o="log/nanoplot/{runid}.log",
+        e="log/nanoplot/{runid}.err",
+    benchmark: "log/nanoplot/{runid}.bmk"
+    threads: get_resource("nanoplot","threads")
+    resources:
+        mem_mb= get_resource("nanoplot","mem_mb"),
+        runtime=get_resource("nanoplot","runtime"),
+    shell: """
+    NanoPlot --summary {input.summary} -o {output.d} > {log.o} 2> {log.e}
+    """
+
+rule poretools:
+    input: "/storage/scratch01/groups/bu/myeloma_altum/altum/Sequencing_runs/1901449_nanopore_20220517/no_sample/20220517_1140_MN38629_FAR64540_5c4e90ff/fast5/"
+    output: d= directory("results/poretools/output")
+    conda: "envs/poretools.yaml"
+    shell: """
+        poretools fastq {input} > output.txt 2> log.txt
     """
