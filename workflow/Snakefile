@@ -1,8 +1,15 @@
-configfile = "config/config.yaml"
+configfile: "config/config.yaml.example"
 
 def input_all(wc):
     for runid in config["runs"]:
         yield "results/nanoplot/{runid}"
+
+def get_resource(rule,resource):
+    try:
+        return config["resources"][rule][resource]
+    except KeyError:
+        return config["resources"]["default"][resource]
+
 
 rule all:
     input: input_all
@@ -12,17 +19,17 @@ def input_nanoplot(wc):
 
 rule nanoplot:
 	input: input_nanoplot
-    output:
-        d=directory("results/nanoplot/{runid}"),
+	output:
+        	d=directory("results/nanoplot/{runid}"),
 	conda: "envs/nanoplot.yaml"
-    log:
-        o="log/nanoplot/{runid}.log",
-        e="log/nanoplot/{runid}.err"
-    benchmark: "log/nanoplot/{runid}.bmk"
-    threads: 8
-    resources:
-        mem_mb=64000,
-        runtime=120
+    	log:
+        	o="log/nanoplot/{runid}.log",
+        	e="log/nanoplot/{runid}.err",
+        benchmark: "log/nanoplot/{runid}.bmk"
+	threads: get_resource("nanoplot","threads")
+        resources:
+        	mem_mb= get_resource("nanoplot","mem_mb"),
+        	runtime=get_resource("nanoplot","runtime"),
 	shell: """
         NanoPlot --summary {input.summary} -o {output.d} > {log.o} 2> {log.e}
     """
